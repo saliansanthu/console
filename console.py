@@ -1,7 +1,7 @@
-from email.mime import application
-
-from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsPixmapItem
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QGraphicsScene, QGraphicsPixmapItem, QDialog
 from PyQt5.QtGui import QPixmap
+from loginForm import Ui_loginWindow
 
 
 from welcomeScreen import Ui_welcomeScreen
@@ -15,15 +15,23 @@ class WelcomeScreen(QMainWindow):
         self.ui = Ui_welcomeScreen()
         self.ui.setupUi(self)
         self.app = app
+        self.sorting_flag = False
+        self.ethernet_status = True
         self.ui.exitButton.clicked.connect(self.onExit)
         self.ui.sortingButton.clicked.connect(self.updateSortingFlag)
-        self.sorting_flag = False
+        self.ui.loginButton.clicked.connect(self.onLoginClick)
+        self.setLogo()
         self.updateSortingButton()
+        self.updateEthernetStatus()
+        
+        
+    def setLogo(self):
         scene = QGraphicsScene(self)
-        pixmap = QPixmap("logo.jpg")
+        pixmap = QPixmap("logo.png")
+        pixmap = pixmap.scaled(200, 200)
         item = QGraphicsPixmapItem(pixmap)
         scene.addItem(item)
-        self.ui.graphicsView.setScene(scene)
+        self.ui.logoView.setScene(scene)
     
 
     def onExit(self):
@@ -39,14 +47,44 @@ class WelcomeScreen(QMainWindow):
     def updateSortingButton(self):
         if self.sorting_flag == True:
             self.ui.sortingButton.setText("ON")
-            self.ui.sortingButton.setStyleSheet("border-radius: 10%;\n"
-"color: rgb(255, 255, 255);\n"
-"background-color: rgb(0, 255, 0);")
         else:
             self.ui.sortingButton.setText("OFF")
-            self.ui.sortingButton.setStyleSheet("border-radius: 10%;\n"
-"color: rgb(255, 255, 255);\n"
-"background-color: rgb(255, 170, 0);")
+
+    def updateEthernetStatus(self):
+        scene = QGraphicsScene(self)
+        if self.ethernet_status == True:
+            pixmap = QPixmap("eth_up.png")
+            self.ui.sortingButton.setHidden(False)
+            self.ui.loginButton.setHidden(False)
+        else:
+            pixmap = QPixmap("eth_down.png")
+            self.ui.sortingButton.setHidden(True)
+            self.ui.loginButton.setHidden(True)
+
+        pixmap = pixmap.scaled(50, 50)
+        item = QGraphicsPixmapItem(pixmap)
+        scene.addItem(item)
+        self.ui.ethStatusView.setScene(scene)
+
+    def onLoginClick(self):
+        class LoginScreen(QDialog):
+            def __init__(self):
+                super(LoginScreen, self).__init__()
+                self.ui = Ui_loginWindow()
+                self.ui.setupUi(self)
+                self.setWindowFlags( Qt.FramelessWindowHint | self.windowFlags())
+                self.setAttribute(Qt.WA_TranslucentBackground)
+                self.setWindowOpacity(0.9)
+                self.ui.exitButton.clicked.connect(self.onExit)
+            
+            def onExit(self):
+                self.close()
+        
+        win = LoginScreen()
+
+        win.exec()
+
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
